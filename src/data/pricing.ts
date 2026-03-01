@@ -1,0 +1,55 @@
+import type { PricingTier } from "@/types";
+
+export const pricingTiers: PricingTier[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    price: "RM 800",
+    description: "Great for small units, homestays, and single-room listings.",
+    features: [
+      "Up to 5 panoramic shots",
+      "Basic interactive virtual tour",
+      "Shareable tour link",
+      "Mobile responsive tour",
+      "7 business day turnaround",
+      "1 round of revisions",
+    ],
+    cta: "Get Started",
+  },
+  {
+    id: "professional",
+    name: "Professional",
+    price: "RM 2,500",
+    description: "Ideal for residential listings and showroom properties.",
+    features: [
+      "Up to 20 panoramic shots",
+      "Interactive tour with hotspots",
+      "2D floor plan generation",
+      "5 drone aerial shots",
+      "Custom branding & logo",
+      "3 business day turnaround",
+      "2 rounds of revisions",
+      "Analytics dashboard",
+    ],
+    highlighted: true,
+    cta: "Get Started",
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    price: "RM 5,500",
+    description: "For developers, commercial spaces, and high-value listings.",
+    features: [
+      "Up to 50 panoramic shots",
+      "Fully branded virtual tour",
+      "2D + 3D floor plans",
+      "Full drone aerial coverage",
+      "Video walkthrough",
+      "Virtual staging (up to 5 rooms)",
+      "Priority 48-hour turnaround",
+      "3 rounds of revisions",
+      "Dedicated account manager",
+    ],
+    cta: "Get Started",
+  },
+];

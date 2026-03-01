@@ -1,26 +1,277 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-background: #0a0a0f;
+  --color-background-secondary: #12121a;
+  --color-background-card: #1a1a2e;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-foreground: #e4e4e7;
+  --color-foreground-muted: #a1a1aa;
+
+  --color-accent-blue: #3b82f6;
+  --color-accent-purple: #8b5cf6;
+  --color-accent-teal: #14b8a6;
+  --color-accent-cyan: #06b6d4;
+
+  --color-primary: #6366f1;
+  --color-primary-hover: #818cf8;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Inter", system-ui, sans-serif;
+
+  --animate-fade-in: fadeIn 0.6s ease-out forwards;
+  --animate-slide-up: slideUp 0.6s ease-out forwards;
+  --animate-glow-pulse: glowPulse 3s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes slideUp {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes glowPulse {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
   }
 }
 
+html {
+  scroll-behavior: smooth;
+  background-color: #0a0a0f;
+  color: #e4e4e7;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: rgba(99, 102, 241, 0.3);
+  color: white;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #3b3b5c;
+  border-radius: 4px;
+}
+
+@layer components {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+  }
+
+  .gradient-text {
+    background: linear-gradient(to right, #3b82f6, #8b5cf6, #14b8a6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(48px);
+    opacity: 0.2;
+    pointer-events: none;
+  }
+}
+
+/* ── Pannellum hotspot overrides ── */
+
+/* Info hotspot: pulsing teal circle with glow */
+.pnlm-hotspot.pnlm-info {
+  width: 32px !important;
+  height: 32px !important;
+  left: 16px;
+  top: 16px;
+  background: rgb(20, 184, 166) !important;
+  border: 2px solid rgba(20, 184, 166, 0.8) !important;
+  border-radius: 50% !important;
+  box-shadow:
+    0 0 16px 4px rgba(20, 184, 166, 0.5),
+    0 0 32px 8px rgba(20, 184, 166, 0.2) !important;
+  animation: hotspotPulse 2s ease-in-out infinite !important;
+  cursor: pointer !important;
+  margin: -18px 0 0 -18px !important;
+}
+
+.pnlm-hotspot.pnlm-info::after {
+  content: "ℹ";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.pnlm-hotspot.pnlm-info:hover {
+  transform: scale(1.25);
+  box-shadow:
+    0 0 24px 8px rgba(20, 184, 166, 0.7),
+    0 0 48px 16px rgba(20, 184, 166, 0.3) !important;
+}
+
+/* Info hotspot tooltip */
+.pnlm-hotspot.pnlm-info .pnlm-tooltip {
+  background: rgba(15, 15, 25, 0.95) !important;
+  border: 1px solid rgba(20, 184, 166, 0.4) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  color: #e4e4e7 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  max-width: 240px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(20, 184, 166, 0.15) !important;
+  backdrop-filter: blur(12px);
+}
+
+.pnlm-hotspot.pnlm-info .pnlm-tooltip span {
+  border-color: rgba(15, 15, 25, 0.95) transparent transparent transparent !important;
+}
+
+/* Hide Pannellum default sprite only for info hotspots (we provide our own icon) */
+.pnlm-hotspot.pnlm-info .pnlm-sprite {
+  display: none !important;
+}
+
+/* Scene-link hotspot: pulsing blue circle with glow */
+.pnlm-hotspot.pnlm-scene {
+  width: 32px !important;
+  height: 32px !important;
+  left: 16px;
+  top: 16px;
+  background: rgb(59, 130, 246) !important;
+  border: 2px solid rgba(59, 130, 246, 0.8) !important;
+  border-radius: 50% !important;
+  box-shadow:
+    0 0 16px 4px rgba(59, 130, 246, 0.5),
+    0 0 32px 8px rgba(59, 130, 246, 0.2) !important;
+  animation: sceneHotspotPulse 2s ease-in-out infinite !important;
+  cursor: pointer !important;
+  margin: -18px 0 0 -18px !important;
+}
+
+.pnlm-hotspot.pnlm-scene::after {
+  content: "⬆";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.pnlm-hotspot.pnlm-scene:hover {
+  transform: scale(1.25);
+  box-shadow:
+    0 0 24px 8px rgba(59, 130, 246, 0.7),
+    0 0 48px 16px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Scene-link tooltip */
+.pnlm-hotspot.pnlm-scene .pnlm-tooltip {
+  background: rgba(15, 15, 25, 0.95) !important;
+  border: 1px solid rgba(59, 130, 246, 0.4) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  color: #e4e4e7 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  max-width: 240px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(59, 130, 246, 0.15) !important;
+  backdrop-filter: blur(12px);
+}
+
+.pnlm-hotspot.pnlm-scene .pnlm-tooltip span {
+  border-color: rgba(15, 15, 25, 0.95) transparent transparent transparent !important;
+}
+
+/* Hide Pannellum default sprite for scene hotspots */
+.pnlm-hotspot.pnlm-scene .pnlm-sprite {
+  display: none !important;
+}
+
+@keyframes sceneHotspotPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 16px 4px rgba(59, 130, 246, 0.5),
+      0 0 32px 8px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 24px 8px rgba(59, 130, 246, 0.7),
+      0 0 48px 12px rgba(59, 130, 246, 0.35);
+  }
+}
+
+/* Hide Pannellum UI chrome */
+.pnlm-about-msg-btn,
+.pnlm-orientation-button,
+.pnlm-load-button-container {
+  display: none !important;
+}
+
+@keyframes hotspotPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 16px 4px rgba(20, 184, 166, 0.5),
+      0 0 32px 8px rgba(20, 184, 166, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 24px 8px rgba(20, 184, 166, 0.7),
+      0 0 48px 12px rgba(20, 184, 166, 0.35);
+  }
 }
