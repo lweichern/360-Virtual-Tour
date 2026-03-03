@@ -64,7 +64,7 @@ export default function Navbar() {
 
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-foreground p-2"
+            className="md:hidden relative text-white p-2"
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
@@ -75,9 +75,9 @@ export default function Navbar() {
       {/* Mobile Menu */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-background/95 backdrop-blur-lg transition-all duration-300 md:hidden flex flex-col items-center justify-center gap-8",
+          "fixed inset-0 z-40 bg-background/95 transition-all duration-300 md:hidden flex flex-col items-center justify-center gap-8",
           mobileOpen
-            ? "opacity-100 pointer-events-auto"
+            ? "opacity-100 pointer-events-auto backdrop-blur-lg"
             : "opacity-0 pointer-events-none"
         )}
       >

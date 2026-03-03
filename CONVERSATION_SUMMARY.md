@@ -129,7 +129,29 @@ ImmersiveSpace is a **360 virtual tour company website** built with Next.js 16, 
 
 **Fix:** Added `data-lenis-prevent` attribute to the PanoramaViewer wrapper `<div>`. This is Lenis's built-in mechanism to exclude specific elements from smooth scroll handling — wheel events inside the panorama now go only to Pannellum for zoom control.
 
-### 11. Other Changes
+### 11. Fix Mobile Hamburger Menu Not Showing
+
+**File:** `src/components/layout/Navbar.tsx`
+
+**Problem:** The hamburger menu button was not visible on the pricing page (and potentially other pages) on mobile viewports.
+
+**Fix (two changes):**
+1. **Moved `backdrop-blur-lg`** from the mobile menu overlay's base classes to only apply when open. The backdrop blur was always present (even at `opacity-0`), creating a GPU compositing layer that could interfere with painting of the hamburger button above it.
+2. **Changed button color** from `text-foreground` to `text-white` and added `relative` for explicit stacking context, ensuring maximum contrast and proper layer ordering.
+
+### 12. Fix Fullscreen Button Not Working on Mobile (Viewer)
+
+**File:** `src/components/shared/PanoramaViewer.tsx`
+
+**Problem:** The fullscreen button in the viewer worked on desktop but not on phone devices. Pannellum's native `toggleFullscreen()` uses the standard Fullscreen API (`Element.requestFullscreen()`), which iOS Safari does not support for non-video elements.
+
+**Fix:** Replaced Pannellum's `toggleFullscreen()` with a custom implementation:
+1. **Tries native Fullscreen API first** (works on desktop + Android) — includes `webkitRequestFullscreen` vendor prefix
+2. **Falls back to CSS-based "faux fullscreen"** on iOS Safari — sets the wrapper to `position: fixed; inset: 0; z-index: 9999; width: 100vw; height: 100vh`
+3. **Exit mechanisms:** Close button (X icon, top-right corner), Escape key listener
+4. If the native API is available but rejects (e.g. not triggered by user gesture), it also falls back to CSS fullscreen
+
+### 13. Other Changes
 
 - Removed "Bringing Properties to Life" / InteractiveModel section from homepage
 - Replaced Matterport iframe in hero with 3D model (later replaced with subtle background approach)

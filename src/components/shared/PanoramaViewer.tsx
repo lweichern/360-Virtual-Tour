@@ -137,14 +137,26 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
     },
     ref
   ) => {
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<PannellumViewer | null>(null);
     const [loading, setLoading] = useState(true);
     const [autoRotating, setAutoRotating] = useState(autoRotate);
+    const [isFauxFullscreen, setIsFauxFullscreen] = useState(false);
     const onSceneClickRef = useRef(onSceneClick);
     onSceneClickRef.current = onSceneClick;
     const onSceneChangeRef = useRef(onSceneChange);
     onSceneChangeRef.current = onSceneChange;
+
+    // Exit faux fullscreen on Escape key
+    useEffect(() => {
+      if (!isFauxFullscreen) return;
+      const handleKey = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setIsFauxFullscreen(false);
+      };
+      window.addEventListener("keydown", handleKey);
+      return () => window.removeEventListener("keydown", handleKey);
+    }, [isFauxFullscreen]);
 
     // Preload all scene images so transitions are instant
     useEffect(() => {
@@ -320,8 +332,38 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
         }
       },
       toggleFullscreen: () => {
-        if (!viewerRef.current) return;
-        viewerRef.current.toggleFullscreen();
+        const el = wrapperRef.current;
+        if (!el) return;
+
+        // Check if we're currently in native fullscreen
+        const doc = document as Document & {
+          webkitFullscreenElement?: Element;
+          webkitExitFullscreen?: () => void;
+        };
+        const isNativeFS =
+          doc.fullscreenElement === el || doc.webkitFullscreenElement === el;
+
+        if (isNativeFS) {
+          (doc.exitFullscreen?.() ?? doc.webkitExitFullscreen?.());
+          return;
+        }
+
+        // Try native Fullscreen API first (works on desktop + Android)
+        const reqFS =
+          el.requestFullscreen ??
+          (el as HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> })
+            .webkitRequestFullscreen;
+
+        if (reqFS) {
+          reqFS.call(el).catch(() => {
+            // Native API rejected — fall back to CSS fullscreen
+            setIsFauxFullscreen((prev) => !prev);
+          });
+          return;
+        }
+
+        // No native API (iOS Safari) — use CSS-based fullscreen
+        setIsFauxFullscreen((prev) => !prev);
       },
       getHfov: () => viewerRef.current?.getHfov() ?? hfov,
       setHfov: (val: number) => viewerRef.current?.setHfov(val),
@@ -334,11 +376,27 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
     }));
 
     return (
-      <div className={`relative w-full ${className ?? ""}`} data-lenis-prevent>
+      <div
+        ref={wrapperRef}
+        className={`relative w-full ${className ?? ""}`}
+        data-lenis-prevent
+        style={
+          isFauxFullscreen
+            ? {
+                position: "fixed",
+                inset: 0,
+                zIndex: 9999,
+                width: "100vw",
+                height: "100vh",
+                borderRadius: 0,
+              }
+            : undefined
+        }
+      >
         <div
           ref={containerRef}
           className="w-full h-full rounded-lg overflow-hidden"
-          style={{ minHeight: "400px" }}
+          style={{ minHeight: isFauxFullscreen ? "100vh" : "400px" }}
         />
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background-card rounded-lg">
@@ -349,6 +407,17 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
               </p>
             </div>
           </div>
+        )}
+        {isFauxFullscreen && (
+          <button
+            onClick={() => setIsFauxFullscreen(false)}
+            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+            aria-label="Exit fullscreen"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+            </svg>
+          </button>
         )}
       </div>
     );
