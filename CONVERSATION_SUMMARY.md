@@ -146,10 +146,11 @@ ImmersiveSpace is a **360 virtual tour company website** built with Next.js 16, 
 **Problem:** The fullscreen button in the viewer worked on desktop but not on phone devices. Pannellum's native `toggleFullscreen()` uses the standard Fullscreen API (`Element.requestFullscreen()`), which iOS Safari does not support for non-video elements.
 
 **Fix:** Replaced Pannellum's `toggleFullscreen()` with a custom implementation:
-1. **Tries native Fullscreen API first** (works on desktop + Android) — includes `webkitRequestFullscreen` vendor prefix
-2. **Falls back to CSS-based "faux fullscreen"** on iOS Safari — sets the wrapper to `position: fixed; inset: 0; z-index: 9999; width: 100vw; height: 100vh`
-3. **Exit mechanisms:** Close button (X icon, top-right corner), Escape key listener
-4. If the native API is available but rejects (e.g. not triggered by user gesture), it also falls back to CSS fullscreen
+1. **Uses `document.fullscreenEnabled`** (+ `webkitFullscreenEnabled`) to check if native API actually works — iOS Safari has `requestFullscreen` on the prototype but it doesn't work for non-video elements, so checking `.fullscreenEnabled` is the reliable detection
+2. **Falls back to CSS-based "faux fullscreen"** on iOS Safari — sets the wrapper to `position: fixed; inset: 0; z-index: 9999; background: #000; width: 100vw; height: 100vh`
+3. **Exit mechanisms:** Close button (Minimize icon, top-right corner), Escape key listener, tapping fullscreen button again
+4. **Dispatches `resize` event** on faux fullscreen toggle so Pannellum recalculates container dimensions
+5. If native API is supported but rejects, `.catch()` falls back to CSS fullscreen
 
 ### 13. Other Changes
 

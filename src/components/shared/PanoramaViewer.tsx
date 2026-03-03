@@ -148,8 +148,11 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
     const onSceneChangeRef = useRef(onSceneChange);
     onSceneChangeRef.current = onSceneChange;
 
-    // Exit faux fullscreen on Escape key
+    // Handle faux fullscreen: Escape key + trigger Pannellum resize
     useEffect(() => {
+      // Tell Pannellum to recalculate dimensions for the new container size
+      window.dispatchEvent(new Event("resize"));
+
       if (!isFauxFullscreen) return;
       const handleKey = (e: KeyboardEvent) => {
         if (e.key === "Escape") setIsFauxFullscreen(false);
@@ -335,35 +338,36 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
         const el = wrapperRef.current;
         if (!el) return;
 
-        // Check if we're currently in native fullscreen
+        // Exit faux fullscreen
+        if (isFauxFullscreen) {
+          setIsFauxFullscreen(false);
+          return;
+        }
+
+        // Exit native fullscreen
         const doc = document as Document & {
           webkitFullscreenElement?: Element;
           webkitExitFullscreen?: () => void;
+          webkitFullscreenEnabled?: boolean;
         };
-        const isNativeFS =
-          doc.fullscreenElement === el || doc.webkitFullscreenElement === el;
 
-        if (isNativeFS) {
-          (doc.exitFullscreen?.() ?? doc.webkitExitFullscreen?.());
+        if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+          (doc.exitFullscreen ?? doc.webkitExitFullscreen)?.call(doc);
           return;
         }
 
-        // Try native Fullscreen API first (works on desktop + Android)
-        const reqFS =
-          el.requestFullscreen ??
-          (el as HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> })
-            .webkitRequestFullscreen;
+        // Only attempt native API if the browser actually supports it
+        // (iOS Safari has the method but doesn't support it for non-video elements)
+        const nativeSupported =
+          doc.fullscreenEnabled ?? doc.webkitFullscreenEnabled ?? false;
 
-        if (reqFS) {
-          reqFS.call(el).catch(() => {
-            // Native API rejected — fall back to CSS fullscreen
-            setIsFauxFullscreen((prev) => !prev);
-          });
+        if (nativeSupported && el.requestFullscreen) {
+          el.requestFullscreen().catch(() => setIsFauxFullscreen(true));
           return;
         }
 
-        // No native API (iOS Safari) — use CSS-based fullscreen
-        setIsFauxFullscreen((prev) => !prev);
+        // No native support — CSS-based fullscreen
+        setIsFauxFullscreen(true);
       },
       getHfov: () => viewerRef.current?.getHfov() ?? hfov,
       setHfov: (val: number) => viewerRef.current?.setHfov(val),
@@ -388,6 +392,7 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
                 zIndex: 9999,
                 width: "100vw",
                 height: "100vh",
+                background: "#000",
                 borderRadius: 0,
               }
             : undefined
