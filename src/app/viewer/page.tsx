@@ -76,6 +76,7 @@ export default function ViewerPage() {
 
   // Share state
   const [showCopied, setShowCopied] = useState(false);
+  const [isSharedTour, setIsSharedTour] = useState(false);
 
   // Load tour from URL hash on mount
   useEffect(() => {
@@ -88,6 +89,7 @@ export default function ViewerPage() {
       if (Array.isArray(parsed) && parsed.length > 0) {
         setScenes(parsed);
         setActiveSceneId(parsed[0].id);
+        setIsSharedTour(true);
       }
     } catch {
       // Invalid hash data — ignore
@@ -356,7 +358,7 @@ export default function ViewerPage() {
                 exit={{ opacity: 0, y: -20 }}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                   <div className="flex items-center gap-3">
                     <Layers size={18} className="text-accent-purple" />
                     <span className="text-white font-medium">
@@ -369,25 +371,25 @@ export default function ViewerPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <button
-                        onClick={handleShare}
-                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm text-foreground-muted hover:text-white hover:bg-white/5 border border-white/10 transition-colors"
-                      >
-                        {showCopied ? (
-                          <Check size={14} className="text-accent-teal" />
-                        ) : (
-                          <Share2 size={14} />
-                        )}
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-foreground-muted hover:text-white hover:bg-white/5 border border-white/10 transition-colors"
+                    >
+                      {showCopied ? (
+                        <Check size={14} className="text-accent-teal" />
+                      ) : (
+                        <Share2 size={14} />
+                      )}
+                      <span className="hidden sm:inline">
                         {showCopied ? "Link Copied!" : "Share"}
-                      </button>
-                    </div>
+                      </span>
+                    </button>
                     <button
                       onClick={clearAll}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full text-sm text-foreground-muted hover:text-white hover:bg-white/5 border border-white/10 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-foreground-muted hover:text-white hover:bg-white/5 border border-white/10 transition-colors"
                     >
                       <X size={14} />
-                      Close Tour
+                      <span className="hidden sm:inline">Close Tour</span>
                     </button>
                   </div>
                 </div>
@@ -480,7 +482,7 @@ export default function ViewerPage() {
                     )}
 
                     {/* Controls */}
-                    <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                       <ControlButton
                         icon={<ZoomIn size={18} />}
                         label="Zoom In"
@@ -508,29 +510,35 @@ export default function ViewerPage() {
                         onClick={() => viewerRef.current?.toggleFullscreen()}
                       />
 
-                      <div className="w-px h-8 bg-white/10 hidden sm:block" />
+                      {!isSharedTour && (
+                        <>
+                          <div className="w-px h-8 bg-white/10 hidden sm:block" />
 
-                      <ControlButton
-                        icon={<Plus size={18} />}
-                        label="Info Point"
-                        active={addMode === "info"}
-                        activeColor="teal"
-                        onClick={() => {
-                          setAddMode(addMode === "info" ? null : "info");
-                          setPendingPoint(null);
-                        }}
-                      />
-                      {otherScenes.length > 0 && (
-                        <ControlButton
-                          icon={<ArrowRightLeft size={18} />}
-                          label="Scene Link"
-                          active={addMode === "scene"}
-                          activeColor="blue"
-                          onClick={() => {
-                            setAddMode(addMode === "scene" ? null : "scene");
-                            setPendingPoint(null);
-                          }}
-                        />
+                          <ControlButton
+                            icon={<Plus size={18} />}
+                            label="Info Point"
+                            active={addMode === "info"}
+                            activeColor="teal"
+                            onClick={() => {
+                              setAddMode(addMode === "info" ? null : "info");
+                              setPendingPoint(null);
+                            }}
+                          />
+                          {otherScenes.length > 0 && (
+                            <ControlButton
+                              icon={<ArrowRightLeft size={18} />}
+                              label="Scene Link"
+                              active={addMode === "scene"}
+                              activeColor="blue"
+                              onClick={() => {
+                                setAddMode(
+                                  addMode === "scene" ? null : "scene"
+                                );
+                                setPendingPoint(null);
+                              }}
+                            />
+                          )}
+                        </>
                       )}
                     </div>
 
@@ -682,24 +690,32 @@ export default function ViewerPage() {
                             Scenes
                           </h3>
                         </div>
-                        <button
-                          onClick={() => addSceneInputRef.current?.click()}
-                          className="text-xs text-primary hover:text-primary-hover transition-colors font-medium"
-                        >
-                          + Add Scene
-                        </button>
-                        <input
-                          ref={addSceneInputRef}
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          className="hidden"
-                          onChange={(e) => {
-                            const files = Array.from(e.target.files || []);
-                            files.forEach((f) => addScene(f));
-                            e.target.value = "";
-                          }}
-                        />
+                        {!isSharedTour && (
+                          <>
+                            <button
+                              onClick={() =>
+                                addSceneInputRef.current?.click()
+                              }
+                              className="text-xs text-primary hover:text-primary-hover transition-colors font-medium"
+                            >
+                              + Add Scene
+                            </button>
+                            <input
+                              ref={addSceneInputRef}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              className="hidden"
+                              onChange={(e) => {
+                                const files = Array.from(
+                                  e.target.files || []
+                                );
+                                files.forEach((f) => addScene(f));
+                                e.target.value = "";
+                              }}
+                            />
+                          </>
+                        )}
                       </div>
 
                       <div className="space-y-1.5">
@@ -737,7 +753,7 @@ export default function ViewerPage() {
                                 {scene.hotspots.length !== 1 ? "s" : ""}
                               </p>
                             </div>
-                            {scenes.length > 1 && (
+                            {scenes.length > 1 && !isSharedTour && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -787,6 +803,7 @@ export default function ViewerPage() {
                               iconBg="bg-accent-teal/20"
                               onLookAt={() => lookAtHotspot(hs)}
                               onDelete={() => deleteHotspot(hs.id)}
+                              readOnly={isSharedTour}
                             />
                           ))}
                         </div>
@@ -838,6 +855,7 @@ export default function ViewerPage() {
                                 iconBg="bg-accent-blue/20"
                                 onLookAt={() => lookAtHotspot(hs)}
                                 onDelete={() => deleteHotspot(hs.id)}
+                                readOnly={isSharedTour}
                               />
                             );
                           })}
@@ -906,6 +924,7 @@ function HotspotListItem({
   iconBg,
   onLookAt,
   onDelete,
+  readOnly,
 }: {
   hotspot: Hotspot;
   subtitle?: string;
@@ -913,6 +932,7 @@ function HotspotListItem({
   iconBg: string;
   onLookAt: () => void;
   onDelete: () => void;
+  readOnly?: boolean;
 }) {
   return (
     <div className="group flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/8 transition-colors">
@@ -940,13 +960,15 @@ function HotspotListItem({
         >
           <Eye size={12} />
         </button>
-        <button
-          onClick={onDelete}
-          className="p-1 rounded-md hover:bg-red-500/20 text-foreground-muted hover:text-red-400 transition-colors"
-          title="Delete"
-        >
-          <Trash2 size={12} />
-        </button>
+        {!readOnly && (
+          <button
+            onClick={onDelete}
+            className="p-1 rounded-md hover:bg-red-500/20 text-foreground-muted hover:text-red-400 transition-colors"
+            title="Delete"
+          >
+            <Trash2 size={12} />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -969,7 +991,7 @@ function ControlButton({
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all",
+        "flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-full text-sm font-medium transition-all",
         active
           ? activeColor === "teal"
             ? "bg-accent-teal text-white"

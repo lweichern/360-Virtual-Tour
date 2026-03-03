@@ -1,16 +1,47 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import GlowEffect from "@/components/ui/GlowEffect";
 
+const HeroBackground = dynamic(
+  () => import("@/components/3d/HeroBackground"),
+  { ssr: false }
+);
+
 export default function HeroSection() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Delay slightly so the layout is fully computed before Canvas initializes
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background glow effects */}
       <GlowEffect color="purple" size="lg" className="top-20 -left-20" />
       <GlowEffect color="blue" size="lg" className="bottom-20 -right-20" />
-      <GlowEffect color="teal" size="md" className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+      <GlowEffect
+        color="teal"
+        size="md"
+        className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+      />
+
+      {/* 3D background — sits behind all content */}
+      <div
+        className={`absolute inset-0 z-0 transition-opacity duration-1000 ${
+          mounted ? "opacity-40" : "opacity-0"
+        }`}
+      >
+        <HeroBackground />
+      </div>
+
+      {/* Gradient fade at bottom so 3D blends into next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent z-[1]" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 pt-32 pb-20 text-center">
         <motion.div
@@ -63,29 +94,6 @@ export default function HeroSection() {
           >
             Get a Free Quote
           </Link>
-        </motion.div>
-
-        {/* Embedded tour preview */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-          className="mt-20 mx-auto max-w-4xl"
-        >
-          <div className="glass-card p-2 md:p-3">
-            <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-background-card">
-              <iframe
-                src="https://my.matterport.com/show/?m=SxQL3iGyvMk"
-                className="absolute inset-0 w-full h-full"
-                allowFullScreen
-                loading="lazy"
-                title="Sample Virtual Tour"
-              />
-            </div>
-          </div>
-          <p className="mt-4 text-foreground-muted text-sm">
-            Interactive demo — click and drag to explore
-          </p>
         </motion.div>
       </div>
     </section>

@@ -334,7 +334,7 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
     }));
 
     return (
-      <div className={`relative w-full ${className ?? ""}`}>
+      <div className={`relative w-full ${className ?? ""}`} data-lenis-prevent>
         <div
           ref={containerRef}
           className="w-full h-full rounded-lg overflow-hidden"
