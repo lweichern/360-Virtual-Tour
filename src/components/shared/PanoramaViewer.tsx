@@ -46,6 +46,7 @@ interface PanoramaViewerProps {
   onLoad?: () => void;
   onSceneClick?: (pitch: number, yaw: number) => void;
   onSceneChange?: (sceneId: string) => void;
+  onFullscreenChange?: (isFullscreen: boolean) => void;
   className?: string;
 }
 
@@ -133,6 +134,7 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
       onLoad,
       onSceneClick,
       onSceneChange,
+      onFullscreenChange,
       className,
     },
     ref
@@ -152,6 +154,7 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
     useEffect(() => {
       // Tell Pannellum to recalculate dimensions for the new container size
       window.dispatchEvent(new Event("resize"));
+      onFullscreenChange?.(isFauxFullscreen);
 
       if (!isFauxFullscreen) return;
       const handleKey = (e: KeyboardEvent) => {
@@ -159,7 +162,7 @@ const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
       };
       window.addEventListener("keydown", handleKey);
       return () => window.removeEventListener("keydown", handleKey);
-    }, [isFauxFullscreen]);
+    }, [isFauxFullscreen]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Preload all scene images so transitions are instant
     useEffect(() => {
