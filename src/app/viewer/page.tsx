@@ -77,6 +77,7 @@ export default function ViewerPage() {
   // Share state
   const [showCopied, setShowCopied] = useState(false);
   const [isSharedTour, setIsSharedTour] = useState(false);
+  const [isViewerFullscreen, setIsViewerFullscreen] = useState(false);
 
   // Load tour from URL hash on mount
   useEffect(() => {
@@ -445,13 +446,14 @@ export default function ViewerPage() {
                           autoRotate={autoRotate}
                           onSceneClick={handleSceneClick}
                           onSceneChange={handleSceneChange}
+                          onFullscreenChange={setIsViewerFullscreen}
                           className="aspect-video"
                         />
                       )}
                     </div>
 
                     {/* Scene Thumbnails Strip */}
-                    {scenes.length > 1 && (
+                    {scenes.length > 1 && !isViewerFullscreen && (
                       <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
                         {scenes.map((scene) => (
                           <button
@@ -482,7 +484,7 @@ export default function ViewerPage() {
                     )}
 
                     {/* Controls */}
-                    <div className="mt-5 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                    <div className={cn("mt-5 flex flex-wrap items-center justify-center gap-2 sm:gap-3", isViewerFullscreen && "hidden")}>
                       <ControlButton
                         icon={<ZoomIn size={18} />}
                         label="Zoom In"
@@ -542,14 +544,16 @@ export default function ViewerPage() {
                       )}
                     </div>
 
-                    <p className="mt-4 text-center text-foreground-muted text-sm">
-                      Drag to look around &bull; Scroll to zoom &bull;
-                      Click scene arrows to navigate
-                    </p>
+                    {!isViewerFullscreen && (
+                      <p className="mt-4 text-center text-foreground-muted text-sm">
+                        Drag to look around &bull; Scroll to zoom &bull;
+                        Click scene arrows to navigate
+                      </p>
+                    )}
                   </div>
 
                   {/* Right Panel */}
-                  <div className="space-y-4">
+                  <div className={cn("space-y-4", isViewerFullscreen && "hidden")}>
                     {/* Pending hotspot form */}
                     <AnimatePresence>
                       {pendingPoint && addMode && (
