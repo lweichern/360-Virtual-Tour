@@ -37,13 +37,6 @@ export const portfolioItems: PortfolioItem[] = [
     category: "commercial",
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop",
   },
-  {
-    id: "azure-condominiums",
-    title: "Azure Condominiums",
-    location: "Mont Kiara, KL",
-    category: "residential",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop",
-  },
 ];
 
 export const categories = [
